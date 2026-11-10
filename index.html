@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enlace Dinámico</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f4f4f9; color: #333; margin: 0; }
+        .box { padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
+        input, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .admin-link { margin-top: 15px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="box" id="redirecting-box">
+    <h2>Redirigiendo...</h2>
+    <p>Por favor espera un momento.</p>
+    <div class="admin-link" onclick="mostrarAdmin()">Modificar enlace (Administrador)</div>
+</div>
+
+<div class="box hidden" id="admin-box">
+    <h2>Panel de Control</h2>
+    <p>Ingresa la contraseña para modificar el enlace de destino:</p>
+    <input type="password" id="password" placeholder="Contraseña">
+    <input type="url" id="new-url" placeholder="https://nueva-direccion-web.com">
+    <button onclick="guardarEnlace()">Actualizar Enlace</button>
+    <button onclick="volver()" style="background-color: #6c757d;">Cancelar</button>
+</div>
+
+<script>
+    // Configura aquí tu contraseña y el enlace inicial por defecto
+    const CLAVE_ACCESO = "MiClaveSegura123"; 
+    const ENLACE_PREDETERMINADO = "https://www.google.com";
+
+    // Al cargar la página, se intenta redirigir
+    window.onload = function() {
+        const destino = localStorage.getItem("enlace_qr") || ENLACE_PREDETERMINADO;
+        
+        // El parámetro "?admin" en la URL permite saltar la redirección automática para poder editar
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('admin')) {
+            mostrarAdmin();
+        } else {
+            // Si no es el administrador, redirige en 1.5 segundos
+            setTimeout(() => {
+                window.location.href = destino;
+            }, 1500);
+        }
+    };
+
+    function mostrarAdmin() {
+        document.getElementById("redirecting-box").classList.add("hidden");
+        document.getElementById("admin-box").classList.remove("hidden");
+    }
+
+    function volver() {
+        document.getElementById("admin-box").classList.add("hidden");
+        document.getElementById("redirecting-box").classList.remove("hidden");
+        // Reintentar la redirección normal
+        const destino = localStorage.getItem("enlace_qr") || ENLACE_PREDETERMINADO;
+        window.location.href = destino;
+    }
+
+    function guardarEnlace() {
+        const pass = document.getElementById("password").value;
+        const nuevaUrl = document.getElementById("new-url").value;
+
+        if (pass === CLAVE_ACCESO) {
+            if (nuevaUrl.trim() !== "" && (nuevaUrl.startsWith("http://") || nuevaUrl.startsWith("https://"))) {
+                localStorage.setItem("enlace_qr", nuevaUrl);
+                alert("¡Enlace actualizado con éxito! Ahora redirigirá a: " + nuevaUrl);
+                window.location.search = ""; // Recarga en modo normal para aplicar redirección
+            } else {
+                alert("Por favor introduce una dirección URL válida que empiece por http:// o https://");
+            }
+        } else {
+            alert("Contraseña incorrecta.");
+        }
+    }
+</script>
+
+</body>
+</html>
